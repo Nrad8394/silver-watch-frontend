@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%; /* Pure white */
+    --foreground: 222.2 47.4% 10%; /* Dark gray for better contrast */
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 10%;
+
+    --primary: 210 100% 40%; /* Deep blue */
+    --primary-foreground: 0 0% 100%; /* White text */
+
+    --secondary: 160 80% 35%; /* Refreshing green */
+    --secondary-foreground: 0 0% 100%; 
+
+    --muted: 210 20% 90%; /* Light gray */
+    --muted-foreground: 222.2 47.4% 30%;
+
+    --accent: 220 70% 50%; /* Modern sky blue */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72.8% 50%; /* Strong red for alerts */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 20% 80%;
+    --input: 215 20% 85%;
+    --ring: 220 90% 35%;
+
+    --radius: 0.75rem; /* Rounded corners */
+  }
+
+  .dark {
+    --background: 222.2 90% 6%; /* Pure dark */
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 90% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 90% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 100% 55%; /* Vibrant blue */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 160 80% 40%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 217 20% 15%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 220 70% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217.2 32.6% 25%;
+    --input: 217.2 32.6% 30%;
+    --ring: 212.7 50% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  .card {
+    @apply bg-card text-card-foreground border border-border rounded-lg p-4;
+  }
+
+  .button {
+    @apply px-4 py-2 rounded-md font-medium;
+  }
+
+  .button-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/80;
+  }
+
+  .button-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .input {
+    @apply border border-input bg-background text-foreground rounded-md px-3 py-2;
+  }
+}
