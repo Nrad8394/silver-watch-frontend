@@ -17,6 +17,8 @@ import {
   Wrench,
   Shield,
   MessageSquare,
+  Logs,
+  UserCircle2,
 } from "lucide-react"
 
 interface NavItem {
@@ -32,6 +34,7 @@ const navItems: Record<string, NavItem[]> = {
     { name: "Health Data", href: "/dashboard/caregiver/health", icon: Heart },
     { name: "Calendar", href: "/dashboard/caregiver/calendar", icon: CalendarDays },
     { name: "Reports", href: "/dashboard/caregiver/reports", icon: BarChart3 },
+    // { name: "Profile", href: "/dashboard/profile", icon: UserCircle2 },
   ],
   admin: [
     { name: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard },
@@ -39,21 +42,26 @@ const navItems: Record<string, NavItem[]> = {
     { name: "Devices", href: "/dashboard/admin/devices", icon: Wrench },
     { name: "Security", href: "/dashboard/admin/security", icon: Shield },
     { name: "Settings", href: "/dashboard/admin/settings", icon: Settings },
+    { name: "System Logs", href: "/dashboard/admin/system-logs", icon: Logs },
+    // { name: "Profile", href: "/dashboard/profile", icon: UserCircle2 },
+
   ],
   technician: [
     { name: "Dashboard", href: "/dashboard/technician", icon: LayoutDashboard },
     { name: "Devices", href: "/dashboard/technician/devices", icon: Wrench },
     { name: "Maintenance", href: "/dashboard/technician/maintenance", icon: Settings },
     { name: "Calibration", href: "/dashboard/technician/calibration", icon: BarChart3 },
+    // { name: "Profile", href: "/dashboard/profile", icon: UserCircle2 },
   ],
   patient: [
     { name: "Dashboard", href: "/dashboard/patient", icon: LayoutDashboard },
     { name: "Health Data", href: "/dashboard/patient/health", icon: Heart },
     { name: "Messages", href: "/dashboard/patient/messages", icon: MessageSquare },
-    { name: "Settings", href: "/dashboard/patient/settings", icon: Settings },
     { name: "Emergency", href: "/dashboard/patient/emergency", icon: Bell },
     { name: "Devices", href: "/dashboard/patient/devices", icon: Wrench },
     { name: "Medications", href: "/dashboard/patient/medications", icon: Shield },
+    { name: "Settings", href: "/dashboard/patient/settings", icon: Settings },
+    // { name: "Profile", href: "/dashboard/profile", icon: UserCircle2 },
   ],
 }
 
