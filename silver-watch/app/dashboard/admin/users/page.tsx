@@ -1,3 +1,4 @@
+"use client";
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -6,8 +7,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Search, Plus, MoreHorizontal, Shield } from "lucide-react"
-
+import { useApi } from "@/hooks/useApi"
+import { USERS_URL } from "@/handler/apiConfig";
+import { User } from "@/types/users";
+import { useState } from "react";
 export default function UsersPage() {
+  const { useFetchData } = useApi<User>(`${USERS_URL}`,100)
+  const { data: usersResponse, isLoading } = useFetchData(1,{all:true})
+  const [users] = useState(usersResponse?.results || []);
+
+  if(isLoading){
+    return <div>Loading...</div>
+  }
+
   return (
     <DashboardLayout userRole="admin">
       <div className="space-y-6">
@@ -68,7 +80,7 @@ export default function UsersPage() {
                 <TableBody>
                   {users.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell className="font-medium">{user.first_name}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
                         <Badge variant={getBadgeVariant(user.role)}>{user.role}</Badge>
@@ -76,7 +88,7 @@ export default function UsersPage() {
                       <TableCell>
                         <Badge variant={user.status === "Active" ? "secondary" : "destructive"}>{user.status}</Badge>
                       </TableCell>
-                      <TableCell>{user.lastActive}</TableCell>
+                      <TableCell>{user.last_active}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

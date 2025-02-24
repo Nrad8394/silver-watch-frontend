@@ -1,18 +1,19 @@
 export type UserRole = "admin" | "caregiver" | "technician" | "patient"
 
 export interface User {
-  id: string
-  email: string
-  firstName: string
-  lastName: string
-  role: UserRole
-  status: "Active" | "Inactive"
-  lastActive: string
-  createdAt: string
-  updatedAt: string
-  profileImage?: string
-  phoneNumber?: string
+  id: string;
+  email: string;
+  first_name: string; // Matches JSON
+  last_name: string;
+  role: UserRole;
+  status: "Active" | "Inactive";
+  last_active?: string | null; // Matches JSON, nullable
+  phone_number?: string; // Matches JSON, optional
+  profile_image?: string | null; // Matches JSON, nullable
+  group_names: string[]; // Matches JSON
+  profile?: unknown | null; // Matches JSON, nullable
 }
+
 
 export interface UserProfile extends User {
   department?: string

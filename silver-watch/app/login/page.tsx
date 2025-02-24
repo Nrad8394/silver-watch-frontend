@@ -1,82 +1,95 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { z } from "zod"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
+import { useAuth } from "@/context/AuthContext"
+import { useApiErrorHandler } from "@/hooks/useApiErrorHandler"
+import { X } from "lucide-react" // Import close icon
+import { useApi } from "@/hooks/useApi"
+import { User } from "@/types/users"
+import { USERS_URL } from "@/handler/apiConfig"
+const loginSchema = z.object({
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters long" })
+})
+
 export default function LoginPage() {
+  const { login, loading } = useAuth()
+  const { useFetchData } = useApi<User>(`${USERS_URL}?all=true`)
+  const { data: user, isLoading } = useFetchData(1)
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const [loading, setLoading] = useState(false)
+  const { handleError } = useApiErrorHandler()
 
-  const defaultRole = searchParams.get("role") || "caregiver"
+  const rolePaths = {
+    caregiver: "/dashboard/caregiver",
+    patient: "/dashboard/patient",
+    admin: "/dashboard/admin",
+    technician: "/dashboard/technician"
+  }
 
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault()
-    setLoading(true)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({ resolver: zodResolver(loginSchema) })
 
-    // Simulate login - replace with actual authentication
-    setTimeout(() => {
-      const formData = new FormData(event.target as HTMLFormElement)
-      const role = formData.get("role")
-      toast.success(`Welcome back, ${role}!`)
-      // Redirect based on role
-      switch (role) {
-        case "caregiver":
-          router.push("/dashboard/caregiver")
-          break        
-        case "patient":
-          router.push("/dashboard/patient")
-          break
-        case "admin":
-          router.push("/dashboard/admin")
-          break
-        case "technician":
-          router.push("/dashboard/technician")
-          break
-        default:
-          router.push("/dashboard/caregiver")
+  function handleNavigation(role: keyof typeof rolePaths) {
+    router.push(rolePaths[role] || "/forbidden")
+  }
+
+  async function onSubmit(data: { email: string; password: string }) {
+    try {
+      const response = await login(data.email, data.password)
+      console.log(response)
+      if (response && !loading ) {
+        toast.success(`Welcome back, ${response.role}!`)
+        if (!isLoading && user && user.results[0].role && user.results[0].role in rolePaths) {
+          handleNavigation(user.results[0].role);
+        }else{
+          router.push("/forbidden")
+        }
+
       }
-    }, 1000)
+    } catch (error) {
+      handleError(error)
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-[400px]">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 relative">
+      <Card className="w-full max-w-[400px] relative">
+        {/* Close (X) Button */}
+        <button
+          onClick={() => router.push("/")}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+          aria-label="Close"
+        >
+          <X className="h-6 w-6" />
+        </button>
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>Enter your credentials to access your account</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Select name="role" defaultValue={defaultRole}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="caregiver">Caregiver</SelectItem>
-                  <SelectItem value="admin">Administrator</SelectItem>
-                  <SelectItem value="technician">Technician</SelectItem>
-                  <SelectItem value="patient">Patient</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+              <Input id="email" {...register("email")} type="email" placeholder="john@example.com" required />
+              {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required />
+              <Input id="password" {...register("password")} type="password" required />
+              {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Signing in..." : "Sign in"}
@@ -98,4 +111,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
