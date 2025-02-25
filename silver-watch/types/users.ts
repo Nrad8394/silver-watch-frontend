@@ -1,18 +1,27 @@
-export type UserRole = "admin" | "caregiver" | "technician" | "patient"
+export type UserRole = "admin" | "caregiver" | "technician" | "patient";
 
 export interface User {
   id: string;
   email: string;
-  first_name: string; // Matches JSON
+  first_name: string;
   last_name: string;
-  role: UserRole;
+  role: UserRole | null;
   status: "Active" | "Inactive";
-  last_active?: string | null; // Matches JSON, nullable
-  phone_number?: string; // Matches JSON, optional
-  profile_image?: string | null; // Matches JSON, nullable
-  group_names: string[]; // Matches JSON
-  profile?: unknown | null; // Matches JSON, nullable
+  last_active?: string | null;
+  phone_number?: string;
+  profile_image?: string | null;
+  group_names: string[];
+  profile?: unknown | null;
+  last_login?: string; 
+  is_superuser: boolean; 
+  username: string; 
+  is_staff: boolean; 
+  is_active: boolean; 
+  date_joined: string; 
+  groups: number[]; 
+  user_permissions: string[]; // Added from JSON, assuming permissions are string-based
 }
+
 
 
 export interface UserProfile extends User {

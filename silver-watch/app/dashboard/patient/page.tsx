@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Heart, Activity, Thermometer, Droplets, Bell, PillIcon as Pills, MessageCircle } from "lucide-react"
-
 export default function PatientDashboardPage() {
+
   return (
     <DashboardLayout userRole="patient">
       <div className="space-y-6">

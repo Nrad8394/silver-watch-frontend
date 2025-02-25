@@ -12,7 +12,7 @@ export function useApi<T>(url: string, pageSize: number = 10) {
   const queryClient = useQueryClient();
 
   // Utility function to build query string
-  const buildQueryString = (params?: Record<string, number>) => {
+  const buildQueryString = (params?: Record<string, number|string|boolean>) => {
     const searchParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -25,7 +25,7 @@ export function useApi<T>(url: string, pageSize: number = 10) {
   };
 
   // Fetch Paginated Data (Supports Django Pagination)
-  const useFetchData = (page: number, params?: Record<string, number>) => {
+  const useFetchData = (page: number, params?: Record<string, number|string|boolean>) => {
     return useQuery<DjangoPaginatedResponse<T>, AxiosError<ApiErrorResponse>>({
       queryKey: [url, page, pageSize, params],
       queryFn: async () => {
@@ -39,7 +39,7 @@ export function useApi<T>(url: string, pageSize: number = 10) {
   };
 
   // Fetch a Single Item by ID
-  const useFetchById = (id: string | number, params?: Record<string, number>) => {
+  const useFetchById = (id: string | number, params?: Record<string, number|string|boolean>) => {
     return useQuery<T, AxiosError<ApiErrorResponse>>({
       queryKey: [url, id, params],
       queryFn: async () => {

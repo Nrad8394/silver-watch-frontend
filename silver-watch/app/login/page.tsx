@@ -1,68 +1,71 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { toast } from "sonner"
-import { useAuth } from "@/context/AuthContext"
-import { useApiErrorHandler } from "@/hooks/useApiErrorHandler"
-import { X } from "lucide-react" // Import close icon
-import { useApi } from "@/hooks/useApi"
-import { User } from "@/types/users"
-import { USERS_URL } from "@/handler/apiConfig"
+import { useEffect, useState } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
+import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
+import { X } from "lucide-react";
+import { useApi } from "@/hooks/useApi";
+import { User } from "@/types/users";
+import { USERS_URL } from "@/handler/apiConfig";
+
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters long" })
-})
+  password: z.string().min(6, { message: "Password must be at least 6 characters long" }),
+});
 
 export default function LoginPage() {
-  const { login, loading } = useAuth()
-  const { useFetchData } = useApi<User>(`${USERS_URL}?all=true`)
-  const { data: user, isLoading } = useFetchData(1)
-  const router = useRouter()
-  const { handleError } = useApiErrorHandler()
-
-  const rolePaths = {
-    caregiver: "/dashboard/caregiver",
-    patient: "/dashboard/patient",
-    admin: "/dashboard/admin",
-    technician: "/dashboard/technician"
-  }
+  const { login, loading } = useAuth();
+  const { useFetchData } = useApi<User>(USERS_URL);
+  const { data: user, refetch: refetchUser } = useFetchData(1);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
+  const { handleError } = useApiErrorHandler();
 
   const {
     register,
     handleSubmit,
-    formState: { errors }
-  } = useForm({ resolver: zodResolver(loginSchema) })
-
-  function handleNavigation(role: keyof typeof rolePaths) {
-    router.push(rolePaths[role] || "/forbidden")
-  }
+    formState: { errors },
+  } = useForm({ resolver: zodResolver(loginSchema) });
 
   async function onSubmit(data: { email: string; password: string }) {
     try {
-      const response = await login(data.email, data.password)
-      console.log(response)
-      if (response && !loading ) {
-        toast.success(`Welcome back, ${response.role}!`)
-        if (!isLoading && user && user.results[0].role && user.results[0].role in rolePaths) {
-          handleNavigation(user.results[0].role);
-        }else{
-          router.push("/forbidden")
-        }
-
+      const response = await login(data.email, data.password);
+      if (response) {
+        await refetchUser(); // Fetch latest user data
+        setIsAuthenticated(true);
       }
     } catch (error) {
-      handleError(error)
+      handleError(error);
     }
   }
+
+  useEffect(() => {
+    const rolePaths: Record<string, string> = {
+      caregiver: "/dashboard/caregiver",
+      patient: "/dashboard/patient",
+      admin: "/dashboard/admin",
+      technician: "/dashboard/technician",
+    };
+    if (isAuthenticated && user?.results?.[0]?.role) {
+      const role = user.results[0].role;
+      if (rolePaths[role]) {
+        toast.success(`Welcome back, ${role}!`);
+        router.push(rolePaths[role]);
+      } else {
+        router.push("/forbidden");
+      }
+    }
+  }, [isAuthenticated, user, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 relative">
@@ -109,5 +112,5 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
