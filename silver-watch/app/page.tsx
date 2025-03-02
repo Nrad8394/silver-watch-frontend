@@ -16,9 +16,9 @@ import {
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background ">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3">
         <div className="container flex h-16 items-center justify-between">
           <span className="text-xl font-bold">Silver Watch</span>
           <div className="flex items-center gap-4">
@@ -26,15 +26,15 @@ export default function Page() {
               <Link href="/login">Login</Link>
             </Button>
             <Button asChild>
-              <Link href="/register">Get Started</Link>
+              <Link href="/contact">Get Started</Link>
             </Button>
           </div>
         </div>
       </header>
 
-      <main>
+      <main className="p-3">
         {/* Hero Section */}
-        <section className="container py-24 space-y-8 text-center">
+        <section className="container py-24 space-y-8 text-center m-auto">
           <div className="space-y-4 max-w-[800px] mx-auto">
             <h1 className="text-4xl font-bold lg:text-6xl">Advanced Healthcare Monitoring for Peace of Mind</h1>
             <p className="mx-auto text-gray-500 md:text-xl dark:text-gray-400">
@@ -67,7 +67,7 @@ export default function Page() {
         </section>
 
         {/* Features Section */}
-        <section className="container py-24 space-y-16">
+        <section className="container py-24 space-y-16 m-auto">
           <div className="text-center space-y-4">
             <h2 className="text-3xl font-bold">Comprehensive Monitoring Solutions</h2>
             <p className="text-muted-foreground max-w-[600px] mx-auto">
@@ -92,7 +92,7 @@ export default function Page() {
 
         {/* Stats Section */}
         <section className="border-y bg-muted/50">
-          <div className="container py-24 space-y-8">
+          <div className="container py-24 space-y-8 m-auto">
             <div className="text-center space-y-4">
               <h2 className="text-3xl font-bold">Trusted by Healthcare Providers</h2>
               <p className="text-muted-foreground">Making a difference in healthcare monitoring</p>
@@ -111,8 +111,8 @@ export default function Page() {
         </section>
 
         {/* Benefits Section */}
-        <section className="container py-24 space-y-16">
-          <div className="text-center space-y-4">
+        <section className="container py-24 space-y-16 m-auto">
+          <div className="text-center space-y-4 ">
             <h2 className="text-3xl font-bold">Why Choose Silver Watch?</h2>
             <p className="text-muted-foreground max-w-[600px] mx-auto">
               Our platform offers unique advantages for healthcare monitoring
@@ -133,8 +133,8 @@ export default function Page() {
         </section>
 
         {/* Pricing Section */}
-        <section className="border-t bg-muted/50">
-          <div className="container py-24 space-y-8">
+        <section className="border-t bg-muted/50 ">
+          <div className="container py-24 space-y-8 m-auto">
             <div className="text-center space-y-4">
               <h2 className="text-3xl font-bold">Simple, Transparent Pricing</h2>
               <p className="text-muted-foreground">Choose the plan that fits your needs</p>
@@ -170,7 +170,7 @@ export default function Page() {
         </section>
 
         {/* Testimonials Section */}
-        <section className="container py-24 space-y-8">
+        <section className="container py-24 space-y-8 m-auto">
           <div className="text-center space-y-4">
             <h2 className="text-3xl font-bold">Trusted by Healthcare Professionals</h2>
             <p className="text-muted-foreground">See what our users have to say</p>
@@ -194,9 +194,9 @@ export default function Page() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t">
-        <div className="container py-16">
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+      <footer className="border-t ">
+        <div className="container py-16 px-4 m-auto">
+          <div className="grid gap-4  md:grid-cols-4 lg:grid-cols-4 grid-cols-2">
             <div className="space-y-4">
               <h3 className="text-lg font-bold">Company</h3>
               <nav className="grid gap-2">
@@ -356,21 +356,21 @@ const pricingPlans = [
   {
     name: "Basic",
     description: "For individual caregivers",
-    price: 29,
+    price: 2900,
     features: ["Up to 5 patients", "Real-time monitoring", "Basic alerts", "Mobile app access", "Email support"],
     featured: false,
   },
   {
     name: "Professional",
     description: "For healthcare facilities",
-    price: 99,
+    price: 9900,
     features: ["Up to 50 patients", "Advanced analytics", "Custom alerts", "API access", "24/7 priority support"],
     featured: true,
   },
   {
     name: "Enterprise",
     description: "For large organizations",
-    price: 299,
+    price: 29900,
     features: [
       "Unlimited patients",
       "Custom integration",
