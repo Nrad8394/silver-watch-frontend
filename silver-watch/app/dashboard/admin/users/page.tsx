@@ -8,11 +8,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Badge } from "@/components/ui/badge"
 import { Search, Plus, MoreHorizontal, Shield } from "lucide-react"
 import { useApi } from "@/hooks/useApi"
-import { USERS_URL } from "@/handler/apiConfig";
+import { USER_URL } from "@/handler/apiConfig";
 import { User } from "@/types/users";
 import { formatDateTime } from "@/utils/date";
 export default function UsersPage() {
-  const { useFetchData } = useApi<User>(`${USERS_URL}`, 100);
+  const { useFetchData } = useApi<User,User>(`${USER_URL}`, 100);
   const { data: users, isLoading, isFetched } = useFetchData(1, { all: true });
 
   if (isLoading || !isFetched) {

@@ -16,7 +16,7 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { X } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
 import { User } from "@/types/users";
-import { USERS_URL } from "@/handler/apiConfig";
+import { USER_URL } from "@/handler/apiConfig";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -25,7 +25,7 @@ const loginSchema = z.object({
 
 export default function LoginPage() {
   const { login, loading } = useAuth();
-  const { useFetchData } = useApi<User>(USERS_URL);
+  const { useFetchData } = useApi<User , User>(USER_URL);
   const { data: user, refetch: refetchUser } = useFetchData(1);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();

@@ -38,7 +38,7 @@ class AuthManager {
 
         const response = await apiPlain.post<AuthResponse>(LOGIN_URL, { email, password });
 
-        this.storeTokens(response.data.access); // Only store access token
+        this.storeTokens(response.data.access,); // Only store access token
         return response.data;
     } catch (error) {
         handleApiError(error as AxiosError<ApiErrorResponse>);
@@ -199,7 +199,7 @@ class AuthManager {
  * Stores the access token securely.
  * @param accessToken - JWT access token.
  */
-private storeTokens(accessToken: string): void {
+private storeTokens(accessToken: string ): void {
   Cookies.set('accessToken', accessToken, { expires: 1, secure: true, sameSite: 'Strict' });
 }
 
