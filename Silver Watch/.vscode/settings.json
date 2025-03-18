@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.html": "html",
+        "*.py": "python",
+        "*.tsx": "typescriptreact",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp"
+    }
+}
