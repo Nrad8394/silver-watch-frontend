@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Search, QrCode, Wifi, Battery, Signal, AlertTriangle } from "lucide-react"
+import { Search, Wifi, Battery, Signal, AlertTriangle } from "lucide-react"
+import { AddDeviceDialog } from "@/components/technician/add-device-dialog"
 
 export default function TechnicianDevicesPage() {
   return (
@@ -16,14 +17,12 @@ export default function TechnicianDevicesPage() {
             <h2 className="text-2xl font-bold">Device Management</h2>
             <p className="text-muted-foreground">Monitor and maintain device health</p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="relative w-full sm:w-auto">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="Search devices..." className="pl-8 md:w-[300px]" />
+              <Input type="search" placeholder="Search devices..." className="pl-8 w-full md:w-[300px]" />
             </div>
-            <Button>
-              <QrCode className="mr-2 h-4 w-4" /> Scan Device
-            </Button>
+            <AddDeviceDialog />
           </div>
         </div>
 
@@ -49,70 +48,79 @@ export default function TechnicianDevicesPage() {
         {/* Device List */}
         <Card>
           <CardHeader>
-            <CardTitle>Device Status</CardTitle>
-            <CardDescription>Real-time status of all devices</CardDescription>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle>Device Status</CardTitle>
+                <CardDescription>Real-time status of all devices</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                Export Data
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Device ID</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Battery</TableHead>
-                  <TableHead>Signal</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {devices.map((device) => (
-                  <TableRow key={device.id}>
-                    <TableCell className="font-medium">{device.id}</TableCell>
-                    <TableCell>{device.type}</TableCell>
-                    <TableCell>{device.location}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={device.battery} className="h-2 w-[60px]" />
-                        <span className="text-sm">{device.battery}%</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Signal
-                          className={`h-4 w-4 ${
-                            device.signal > 70
-                              ? "text-green-500"
-                              : device.signal > 30
-                                ? "text-yellow-500"
-                                : "text-red-500"
-                          }`}
-                        />
-                        <span className="text-sm">{device.signal}%</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          device.status === "Online"
-                            ? "default"
-                            : device.status === "Warning"
-                              ? "outline"
-                              : "destructive"
-                        }
-                      >
-                        {device.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">
-                        Diagnose
-                      </Button>
-                    </TableCell>
+            <div className="overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Device ID</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead className="hidden md:table-cell">Location</TableHead>
+                    <TableHead className="hidden sm:table-cell">Battery</TableHead>
+                    <TableHead className="hidden lg:table-cell">Signal</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Action</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {devices.map((device) => (
+                    <TableRow key={device.id}>
+                      <TableCell className="font-medium">{device.id}</TableCell>
+                      <TableCell>{device.type}</TableCell>
+                      <TableCell className="hidden md:table-cell">{device.location}</TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <div className="flex items-center gap-2">
+                          <Progress value={device.battery} className="h-2 w-[60px]" />
+                          <span className="text-sm">{device.battery}%</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="flex items-center gap-2">
+                          <Signal
+                            className={`h-4 w-4 ${
+                              device.signal > 70
+                                ? "text-green-500"
+                                : device.signal > 30
+                                  ? "text-yellow-500"
+                                  : "text-red-500"
+                            }`}
+                          />
+                          <span className="text-sm">{device.signal}%</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            device.status === "Online"
+                              ? "default"
+                              : device.status === "Warning"
+                                ? "outline"
+                                : "destructive"
+                          }
+                        >
+                          {device.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm">
+                          Diagnose
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>

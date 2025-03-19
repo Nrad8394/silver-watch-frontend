@@ -16,6 +16,7 @@ function isApiErrorResponse(error: unknown): error is ApiErrorResponse {
 export function useApiErrorHandler() {
   const handleError = (error: unknown) => {
     if (error instanceof Error) {
+      if(error.message)
       toast.error(error.message);
     } else if (isApiErrorResponse(error)) {
       if (error.non_field_errors && Array.isArray(error.non_field_errors)) {

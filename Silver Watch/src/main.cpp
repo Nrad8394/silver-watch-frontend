@@ -71,15 +71,39 @@ PubSubClient client(espClient);
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", 0, 60000);
 
+// Add these variables near the beginning of the file
+const String STATUS_TOPIC = "device/status/";
+bool lastConnectionState = false;
+unsigned long lastHeartbeatTime = 0;
+const unsigned long HEARTBEAT_INTERVAL = 60000; // 1 minute heartbeat
+
 // Function to initialize SPIFFS
 void initSPIFFS() {
   if (!SPIFFS.begin(true)) {
-    Serial.println("Failed to mount SPIFFS");
-    return;
+    Serial.println("Failed to mount SPIFFS, attempting to format...");
+    if (!SPIFFS.format()) {
+      Serial.println("SPIFFS format failed");
+      return;
+    }
+    if (!SPIFFS.begin()) {
+      Serial.println("SPIFFS mount failed after formatting");
+      return;
+    }
+    Serial.println("SPIFFS formatted and mounted successfully");
+  } else {
+    Serial.println("SPIFFS mounted successfully");
   }
-  Serial.println("SPIFFS mounted successfully");
+  
+  // Simple test to verify SPIFFS is really working
+  File testFile = SPIFFS.open("/test.txt", "w");
+  if (testFile) {
+    testFile.println("This is a test file");
+    testFile.close();
+    Serial.println("Test file created successfully");
+  } else {
+    Serial.println("Failed to create test file - SPIFFS may not be properly mounted");
+  }
 }
-
 // Function to load Device Credentials from SPIFFS
 void loadDeviceCredentials() {
   File file = SPIFFS.open("/device_details.txt", "r");
@@ -88,10 +112,17 @@ void loadDeviceCredentials() {
     return;
   }
   deviceName = file.readStringUntil('\n');
+  deviceName.trim();
   deviceType = file.readStringUntil('\n');
+  deviceType.trim();
   deviceId = file.readStringUntil('\n');
+  deviceId.trim();
   file.close();
-
+  
+  Serial.println("Device credentials loaded:");
+  Serial.println("Name: " + deviceName);
+  Serial.println("Type: " + deviceType);
+  Serial.println("ID: " + deviceId);
 }
 
 // Function to load MQTT credentials from SPIFFS
@@ -102,9 +133,18 @@ void loadMQTTCredentials() {
     return;
   }
   mqttServer = file.readStringUntil('\n');
-  mqttPort = file.readStringUntil('\n').toInt();
+  mqttServer.trim();
+  String portStr = file.readStringUntil('\n');
+  portStr.trim();
+  mqttPort = portStr.toInt();
   mqttTopic = file.readStringUntil('\n');
+  mqttTopic.trim();
   file.close();
+  
+  Serial.println("MQTT credentials loaded:");
+  Serial.println("Server: " + mqttServer);
+  Serial.println("Port: " + String(mqttPort));
+  Serial.println("Topic: " + mqttTopic);
 }
 
 // Function to load Host credentials from SPIFFS
@@ -115,13 +155,17 @@ void loadHostCredentials() {
     return;
   }
   host = file.readStringUntil('\n');
+  host.trim();
   file.close();
+  
+  Serial.println("Host credentials loaded:");
+  Serial.println("Host: " + host);
 }
 
 // Function to fetch user ID from an API
 void fetchUserId() {
   HTTPClient http;
-  String url = "http://192.168.91.200:80/devices/devices/2175536796239/";
+  String url = "http://" + host + "/devices/devices/" + deviceId + "/";
   Serial.println("Fetching User ID from: " + url);
   http.begin(url);
   int httpResponseCode = http.GET();
@@ -164,9 +208,22 @@ void setup_wifi() {
 void reconnect() {
   int attempt = 1;
   while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    if (client.connect("ESP32Client")) {
+    Serial.print("Attempting MQTT connection to ");
+    Serial.print(mqttServer);
+    Serial.print(":");
+    Serial.print(mqttPort);
+    Serial.print("...");
+    
+    String clientId = "ESP32Client-" + deviceId;
+    if (client.connect(clientId.c_str())) {
       Serial.println("connected!");
+      
+      // Publish online status message
+      String statusTopic = STATUS_TOPIC + deviceId;
+      String statusMsg = "{\"status\":\"online\",\"device_id\":\"" + deviceId + "\",\"user_id\":\"" + userId + "\"}";
+      client.publish(statusTopic.c_str(), statusMsg.c_str(), true); // retain flag set to true
+      
+      lastConnectionState = true;
       return;
     }
     Serial.print("failed, rc=");
@@ -215,33 +272,126 @@ void estimateBloodPressure(float heartRate, float spo2, float &systolicBP, float
 // Function to publish sensor data to MQTT
 void publishSensorData(float temperature, float humidity, float heartRate, float spo2, float systolicBP, float diastolicBP) {
   if (heartRate > 0 && spo2 > 0) {  // Only publish valid data
-    char msg[350]; // Increase buffer size for adding user_id
-    snprintf(msg, sizeof(msg), "{\"user_id\": \"%s\", \"temperature\": %.2f, \"humidity\": %.2f, \"heart_rate\": %.2f, \"spo2\": %.2f, \"systolicBP\": %.2f, \"diastolicBP\": %.2f}", 
-    userId, temperature, humidity, heartRate, spo2, systolicBP, diastolicBP);
+    char msg[400]; // Increased buffer size for adding device_id
+    snprintf(msg, sizeof(msg), 
+      "{\"user_id\": \"%s\", \"device_id\": \"%s\", \"temperature\": %.2f, \"humidity\": %.2f, \"heart_rate\": %.2f, \"spo2\": %.2f, \"systolicBP\": %.2f, \"diastolicBP\": %.2f}", 
+      userId.c_str(), deviceId.c_str(), temperature, humidity, heartRate, spo2, systolicBP, diastolicBP);
     Serial.print("Publishing message: ");
     Serial.println(msg);
     client.publish("sensor/data", msg);
+    lastHeartbeatTime = millis(); // Reset heartbeat timer since we just sent data
   } else {
     Serial.println("Invalid data, skipping publish...");
   }
 }
+
+// Function to send periodic heartbeat
+void sendHeartbeat() {
+  if (millis() - lastHeartbeatTime > HEARTBEAT_INTERVAL) {
+    String statusTopic = STATUS_TOPIC + deviceId;
+    String statusMsg = "{\"status\":\"online\",\"device_id\":\"" + deviceId + "\",\"user_id\":\"" + userId + "\"}";
+    client.publish(statusTopic.c_str(), statusMsg.c_str(), true); // retain flag set to true
+    lastHeartbeatTime = millis();
+    Serial.println("Heartbeat sent");
+  }
+}
+
+// Function to publish offline status
+void publishOfflineStatus() {
+  if (client.connected()) {
+    String statusTopic = STATUS_TOPIC + deviceId;
+    String statusMsg = "{\"status\":\"offline\",\"device_id\":\"" + deviceId + "\",\"user_id\":\"" + userId + "\"}";
+    client.publish(statusTopic.c_str(), statusMsg.c_str(), true); // retain flag set to true
+    Serial.println("Published offline status");
+    client.disconnect();
+  }
+}
+void debugSPIFFSFiles() {
+  Serial.println("\n===== CHECKING SPIFFS FILES =====");
+  
+  // List all files
+  File root = SPIFFS.open("/");
+  if (!root || !root.isDirectory()) {
+    Serial.println("ERROR: Failed to open root directory");
+    return;
+  }
+  
+  Serial.println("Files found:");
+  File file = root.openNextFile();
+  while (file) {
+    String fileName = file.name();
+    size_t fileSize = file.size();
+    Serial.printf(" - %s (%d bytes)\n", fileName.c_str(), fileSize);
+    file = root.openNextFile();
+  }
+  
+  // Check specific files
+  String filesToCheck[] = {"/device_details.txt", "/mqtt_config.txt", "/connection_details.txt"};
+  
+  for (String fileName : filesToCheck) {
+    Serial.println("\nChecking " + fileName + ":");
+    if (SPIFFS.exists(fileName)) {
+      File file = SPIFFS.open(fileName, "r");
+      if (file) {
+        Serial.println("Content:");
+        while (file.available()) {
+          String line = file.readStringUntil('\n');
+          Serial.println(" > '" + line + "'");
+        }
+        file.close();
+      } else {
+        Serial.println("ERROR: File exists but cannot be opened");
+      }
+    } else {
+      Serial.println("ERROR: File does not exist");
+    }
+  }
+  
+  Serial.println("==============================\n");
+}
 void setup() {
   Serial.begin(9600);
   delay(1000);
+  Serial.println("\n=== Silver Watch Device Starting ===");
+  
   initSPIFFS();
-  loadMQTTCredentials();
+  debugSPIFFSFiles();
   loadDeviceCredentials();
+  loadMQTTCredentials();
   loadHostCredentials();
   setup_wifi();
   fetchUserId();
-  client.setServer("192.168.91.200", 1883);
+  
+  // Use loaded MQTT server and port instead of hardcoded values
+  client.setServer(mqttServer.c_str(), mqttPort);
+  
   dht.begin();
   initializeSensor();
+  Serial.println("Setup complete - device ready");
 }
 
 void loop() {
   checkWiFi();
-  reconnect();
+  
+  // Check if connection state has changed
+  bool currentConnectionState = client.connected();
+  if (currentConnectionState != lastConnectionState) {
+    if (currentConnectionState) {
+      // Connection restored - will be handled by reconnect() function
+    } else {
+      // Connection lost - will be handled by reconnect() function next iteration
+      Serial.println("MQTT connection lost");
+    }
+    lastConnectionState = currentConnectionState;
+  }
+  
+  if (!client.connected()) {
+    reconnect();
+  }
+  
+  // Send periodic heartbeat
+  sendHeartbeat();
+  
   timeClient.update();
   client.loop();
   readHeartRateAndSpO2();
