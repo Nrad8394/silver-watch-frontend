@@ -143,7 +143,7 @@ export default function AppointmentsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Today's Schedule</CardTitle>
+                <CardTitle>Today&apos;s Schedule</CardTitle>
                 <CardDescription>Upcoming appointments</CardDescription>
               </CardHeader>
               <CardContent>

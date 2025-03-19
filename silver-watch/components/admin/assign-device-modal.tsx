@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input"
 interface AssignDeviceModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: any) => void
+  onSubmit: (data: unknown) => void
 }
 
 export function AssignDeviceModal({ isOpen, onClose, onSubmit }: AssignDeviceModalProps) {

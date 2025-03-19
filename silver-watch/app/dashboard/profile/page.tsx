@@ -1,9 +1,9 @@
 "use client"
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ProfileSettings } from "@/components/settings/profile-settings"
-import { SecuritySettings } from "@/components/settings/security-settings"
-import { NotificationSettings } from "@/components/settings/notification-settings"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+// import { ProfileSettings } from "@/components/settings/profile-settings"
+// import { SecuritySettings } from "@/components/settings/security-settings"
+// import { NotificationSettings } from "@/components/settings/notification-settings"
 
 export default function SettingsPage() {
   return (

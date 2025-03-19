@@ -1,34 +1,41 @@
 "use client"
 
-// import { useUser } from "@/contexts/user-context"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { Bell, Mail, MessageSquare, Loader2 } from "lucide-react"
 
+import { useApi } from "@/hooks/useApi"
+import ApiService from "@/handler/ApiService"
+import { User } from "@/types/users"
 export function NotificationSettings() {
-  const { user, updateNotificationSettings, isLoading } = useUser()
-  const { toast } = useToast()
+  const { useFetchData, useAddItem } = useApi<User,User>(ApiService.USER_URL)
+
+  const { data:fetchedUser, isLoading } = useFetchData(1)
+
+  const { mutate:updateNotificationSettings } = useAddItem
+  const user = fetchedUser?.results[0] || null
 
   const handleSettingChange = async (type: "email" | "push" | "sms", setting: string, value: boolean) => {
     try {
-      await updateNotificationSettings({
-        [type]: {
-          ...user?.notifications[type],
-          [setting]: value,
-        },
-      })
-      toast({
-        title: "Settings updated",
-        description: "Your notification preferences have been saved.",
-      })
+      if (user) {
+        const updatedUser = { 
+          ...user,
+          notifications: {
+            ...user.notifications,
+            [type]: {
+              ...user.notifications[type],
+              [setting]: value
+            }
+          }
+        }
+        await updateNotificationSettings(updatedUser)
+      }
+      toast.success("Notification settings updated successfully")
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update notification settings.",
-        variant: "destructive",
-      })
+      toast("An error occurred while updating notification settings")
+      console.error(error)
     }
   }
 
@@ -52,7 +59,7 @@ export function NotificationSettings() {
               </div>
               <Switch
                 id={`email-${key}`}
-                checked={value}
+                checked={Boolean(value)}
                 onCheckedChange={(checked) => handleSettingChange("email", key, checked)}
                 disabled={isLoading}
               />
@@ -77,7 +84,7 @@ export function NotificationSettings() {
               </div>
               <Switch
                 id={`push-${key}`}
-                checked={value}
+                checked={Boolean(value)}
                 onCheckedChange={(checked) => handleSettingChange("push", key, checked)}
                 disabled={isLoading}
               />
@@ -102,7 +109,7 @@ export function NotificationSettings() {
               </div>
               <Switch
                 id={`sms-${key}`}
-                checked={value}
+                checked={Boolean(value)}
                 onCheckedChange={(checked) => handleSettingChange("sms", key, checked)}
                 disabled={isLoading}
               />
@@ -119,4 +126,3 @@ export function NotificationSettings() {
     </div>
   )
 }
-

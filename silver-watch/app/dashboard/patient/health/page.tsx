@@ -1,3 +1,4 @@
+'use client'
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -5,9 +6,39 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Heart, Activity, Thermometer, Droplets, Download, FileText, TrendingUp } from "lucide-react"
+import { Heart, Activity, Thermometer, Droplets, Download, FileText } from "lucide-react"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
+import { VitalSigns } from "@/types/health"
+import { useApi } from "@/hooks/useApi"
+import ApiService from "@/handler/ApiService"
+import { handleApiError } from "@/utils/api"
 export default function HealthPage() {
+  const { useFetchData } = useApi<VitalSigns, VitalSigns>(ApiService.VITAL_SIGNS_URL)
+  const { data:vitals, isLoading, error ,refetch } = useFetchData(1,{ordering:'-timestamp'})
+  const latestVitals = vitals?.results[0] || {
+    heart_rate: 0,
+    heart_rate_status: "",
+    blood_pressure_systolic: 0,
+    blood_pressure_diastolic: 0,
+    blood_pressure_status: "",
+    temperature: 0,
+    temperature_status: "",
+    blood_oxygen: 0,
+    blood_oxygen_status: "",
+  }
+  if (isLoading) return <p>Loading...</p>
+
+  if (error) {
+    handleApiError(error)
+    return <p>Error</p>
+  }
+
+  // add refetch logic after every 5 sec
+  setInterval(() => {
+    refetch()
+  }, 5000)
+  
   return (
     <DashboardLayout userRole="patient">
       <div className="space-y-6">
@@ -44,39 +75,191 @@ export default function HealthPage() {
           </TabsList>
 
           <TabsContent value="vitals" className="space-y-4">
+            {!latestVitals ? (
+              <Card>
+                <CardContent>
+                  <p>No vital signs data available</p>
+                </CardContent>
+              </Card>
+            ):(
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {vitalTrends.map((vital, index) => (
-                <Card key={index}>
-                  <CardHeader className="flex flex-row items-center space-y-0">
-                    <div>
-                      <CardTitle className="text-sm font-medium">{vital.name}</CardTitle>
-                      <CardDescription>{vital.range}</CardDescription>
-                    </div>
-                    {vital.icon}
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {vital.average}
-                      <span className="text-sm font-normal text-muted-foreground"> {vital.unit}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-green-500">{vital.trend}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+              {/* Heart Rate Card */}
+              <Card>
+                <CardHeader className="flex flex-row items-center space-y-0">
+                  <div>
+                  <CardTitle className="text-sm font-medium">Heart Rate</CardTitle>
+                  <CardDescription>60-100 bpm</CardDescription>
+                  </div>
+                  <Heart className="ml-auto h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                  {latestVitals.heart_rate}
+                  <span className="text-sm font-normal text-muted-foreground"> bpm</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                  <Badge variant={latestVitals.heart_rate_status === "Normal" ? "outline" : "destructive"}>
+                    {latestVitals.heart_rate_status}
+                  </Badge>
+                  </div>
+                </CardContent>
+              </Card>
 
+              {/* Blood Pressure Card */}
+              <Card>
+                <CardHeader className="flex flex-row items-center space-y-0">
+                  <div>
+                  <CardTitle className="text-sm font-medium">Blood Pressure</CardTitle>
+                  <CardDescription>90/60-120/80 mmHg</CardDescription>
+                  </div>
+                  <Activity className="ml-auto h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                  {latestVitals.blood_pressure_systolic}/{latestVitals.blood_pressure_diastolic}
+                  <span className="text-sm font-normal text-muted-foreground"> mmHg</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                  <Badge variant={latestVitals.blood_pressure_status === "Normal" ? "outline" : "destructive"}>
+                    {latestVitals.blood_pressure_status}
+                  </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Temperature Card */}
+              <Card>
+                <CardHeader className="flex flex-row items-center space-y-0">
+                  <div>
+                  <CardTitle className="text-sm font-medium">Temperature</CardTitle>
+                  <CardDescription>36.5-37.5°C</CardDescription>
+                  </div>
+                  <Thermometer className="ml-auto h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                  {latestVitals.temperature}
+                  <span className="text-sm font-normal text-muted-foreground"> °C</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                  <Badge variant={latestVitals.temperature_status === "Normal" ? "outline" : "destructive"}>
+                    {latestVitals.temperature_status}
+                  </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Blood Oxygen Card */}
+              <Card>
+                <CardHeader className="flex flex-row items-center space-y-0">
+                  <div>
+                  <CardTitle className="text-sm font-medium">Blood Oxygen</CardTitle>
+                  <CardDescription>95-100%</CardDescription>
+                  </div>
+                  <Droplets className="ml-auto h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                  {latestVitals.blood_oxygen}
+                  <span className="text-sm font-normal text-muted-foreground"> %</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                  <Badge variant={latestVitals.blood_oxygen_status === "Normal" ? "outline" : "destructive"}>
+                    {latestVitals.blood_oxygen_status}
+                  </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            )}
+            
             <Card>
               <CardHeader>
-                <CardTitle>Vital Signs Trends</CardTitle>
-                <CardDescription>7-day history</CardDescription>
+              <CardTitle>Vital Signs Trends</CardTitle>
+              <CardDescription>7-day history</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="h-[400px] flex items-center justify-center border rounded-lg">
-                  <p className="text-muted-foreground">Chart placeholder</p>
+                <CardContent>
+                <div className="mb-4">
+                  <Select defaultValue="7d" onValueChange={(value) => {
+                  const days = parseInt(value.replace('d', ''));
+                  const hours = value.includes('h') ? parseInt(value.replace('h', '')) : null;
+                  
+                  // Calculate date range based on selection
+                  const endDate = new Date().toISOString();
+                  let startDate;
+                  
+                  if (hours) {
+                    startDate = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+                  } else {
+                    startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+                  }
+                  
+                  // Refetch with date filter
+                  refetch({
+                    timestamp_after: startDate,
+                    timestamp_before: endDate,
+                    ordering: '-timestamp'
+                  });
+                  }}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select time range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="24h">Last 24 Hours</SelectItem>
+                    <SelectItem value="7d">Last 7 Days</SelectItem>
+                    <SelectItem value="30d">Last 30 Days</SelectItem>
+                    <SelectItem value="90d">Last 90 Days</SelectItem>
+                  </SelectContent>
+                  </Select>
                 </div>
+                
+                {vitals?.results && vitals.results.length > 0 ? (
+                  <div className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                    data={vitals.results.slice(0, 10).reverse()}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+                    >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="timestamp" 
+                      tickFormatter={(timestamp) => {
+                      const date = new Date(timestamp);
+                      return `${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                      }}
+                      label={{ value: 'Time', position: 'insideBottom', offset: -40 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis />
+                    <Tooltip 
+                      labelFormatter={(timestamp) => new Date(timestamp).toLocaleString()}
+                      formatter={(value, name) => {
+                      const units = {
+                        heart_rate: 'bpm',
+                        blood_pressure_systolic: 'mmHg',
+                        blood_pressure_diastolic: 'mmHg',
+                        temperature: '°C',
+                        blood_oxygen: '%'
+                      };
+                      return [`${value} ${units[name as keyof typeof units]}`, name];
+                      }}
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="heart_rate" stroke="#ff0000" name="Heart Rate" />
+                    <Line type="monotone" dataKey="blood_pressure_systolic" stroke="#0000ff" name="Systolic BP" />
+                    <Line type="monotone" dataKey="blood_pressure_diastolic" stroke="#8884d8" name="Diastolic BP" />
+                    <Line type="monotone" dataKey="temperature" stroke="#ff7300" name="Temperature" />
+                    <Line type="monotone" dataKey="blood_oxygen" stroke="#00ff00" name="Blood Oxygen" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-[400px] flex items-center justify-center border rounded-lg">
+                <p className="text-muted-foreground">No data available for chart</p>
+                </div>
+              )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -177,40 +360,6 @@ export default function HealthPage() {
   )
 }
 
-const vitalTrends = [
-  {
-    name: "Heart Rate",
-    average: 75,
-    unit: "bpm",
-    range: "60-100 bpm",
-    trend: "+2% vs last week",
-    icon: <Heart className="ml-auto h-4 w-4 text-muted-foreground" />,
-  },
-  {
-    name: "Blood Pressure",
-    average: "118/78",
-    unit: "mmHg",
-    range: "90/60-120/80 mmHg",
-    trend: "-3% vs last week",
-    icon: <Activity className="ml-auto h-4 w-4 text-muted-foreground" />,
-  },
-  {
-    name: "Temperature",
-    average: 36.9,
-    unit: "°C",
-    range: "36.5-37.5°C",
-    trend: "Stable",
-    icon: <Thermometer className="ml-auto h-4 w-4 text-muted-foreground" />,
-  },
-  {
-    name: "Blood Oxygen",
-    average: 97,
-    unit: "%",
-    range: "95-100%",
-    trend: "+1% vs last week",
-    icon: <Droplets className="ml-auto h-4 w-4 text-muted-foreground" />,
-  },
-]
 
 const activitySummary = [
   {

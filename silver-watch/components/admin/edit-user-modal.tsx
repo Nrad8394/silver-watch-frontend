@@ -30,7 +30,7 @@ interface EditUserModalProps {
   user: User
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: any) => void
+  onSubmit: (data: unknown) => void
 }
 
 export function EditUserModal({ user, isOpen, onClose, onSubmit }: EditUserModalProps) {

@@ -1,38 +1,20 @@
 export interface VitalSigns {
-  id: string
-  patientId: string
-  timestamp: string
-  heartRate: {
-    value: number
-    unit: "bpm"
-    status: "Normal" | "Warning" | "Critical"
-  }
-  bloodPressure: {
-    systolic: number
-    diastolic: number
-    unit: "mmHg"
-    status: "Normal" | "Warning" | "Critical"
-  }
-  temperature: {
-    value: number
-    unit: "°C"
-    status: "Normal" | "Warning" | "Critical"
-  }
-  bloodOxygen: {
-    value: number
-    unit: "%"
-    status: "Normal" | "Warning" | "Critical"
-  }
-  respiratoryRate: {
-    value: number
-    unit: "breaths/min"
-    status: "Normal" | "Warning" | "Critical"
-  }
-  consciousness: {
-    value: number
-    scale: "Glasgow Coma Scale"
-    status: "Normal" | "Warning" | "Critical"
-  }
+  id: string;
+  timestamp: string;
+  heart_rate: number;
+  heart_rate_status: string;
+  blood_pressure_systolic: number;
+  blood_pressure_diastolic: number;
+  blood_pressure_status: string;
+  temperature: number;
+  temperature_status: string;
+  blood_oxygen: number;
+  blood_oxygen_status: string;
+  respiratory_rate: number;
+  respiratory_rate_status: string;
+  consciousness_value: number;
+  consciousness_status: string;
+  patient: string;
 }
 
 export interface HealthMetrics {

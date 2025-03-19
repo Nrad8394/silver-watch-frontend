@@ -50,6 +50,7 @@ export function SecuritySettings() {
         description: "Your password has been successfully changed.",
       });
     } catch (error) {
+      console.error(error)
       toast.error(
         "Error",{
         description: "Failed to update password. Please try again.",
@@ -67,6 +68,7 @@ export function SecuritySettings() {
           : "Two-factor authentication has been enabled.",
       })
     } catch (error) {
+      console.error(error)
       toast({
         title: "Error",
         description: "Failed to toggle two-factor authentication.",
@@ -83,6 +85,7 @@ export function SecuritySettings() {
         description: "The selected session has been terminated.",
       })
     } catch (error) {
+      console.error(error)
       toast({
         title: "Error",
         description: "Failed to revoke session. Please try again.",

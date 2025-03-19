@@ -18,7 +18,6 @@ import {
   Shield,
   MessageSquare,
   Logs,
-  UserCircle2,
 } from "lucide-react"
 
 interface NavItem {

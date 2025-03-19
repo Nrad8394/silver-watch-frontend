@@ -11,9 +11,11 @@ import { useApi } from "@/hooks/useApi"
 import { USER_URL } from "@/handler/apiConfig";
 import { User } from "@/types/users";
 import { formatDateTime } from "@/utils/date";
+import { useRouter } from "next/navigation";
 export default function UsersPage() {
   const { useFetchData } = useApi<User,User>(`${USER_URL}`, 100);
   const { data: users, isLoading, isFetched } = useFetchData(1, { all: true });
+  const router = useRouter();
 
   if (isLoading || !isFetched) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -102,7 +104,7 @@ export default function UsersPage() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem>View Details</DropdownMenuItem>
+                                <DropdownMenuItem onClick={()=>{ router.push(`/dashboard/admin/users/${user.id}`) }} >View Details</DropdownMenuItem>
                                 <DropdownMenuItem>Edit User</DropdownMenuItem>
                                 <DropdownMenuItem>Manage Permissions</DropdownMenuItem>
                                 <DropdownMenuItem className="text-red-600">Deactivate User</DropdownMenuItem>

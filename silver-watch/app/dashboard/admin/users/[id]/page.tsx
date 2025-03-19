@@ -1,3 +1,7 @@
+"use client"
+
+import {  useEffect } from "react"
+import { useParams } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -5,6 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useApi } from "@/hooks/useApi"
+import { USER_URL } from "@/handler/apiConfig"
+import { User, UserRole } from "@/types/users"
+import { formatDateTime } from "@/utils/date"
+import { toast } from "sonner"
 import {
   Shield,
   Clock,
@@ -18,30 +27,95 @@ import {
   MapPin,
   Calendar,
   FileText,
+  Loader2,
 } from "lucide-react"
 
 export default function UserProfilePage() {
+  const { id } = useParams() as { id: string }
+  const { useFetchById } = useApi<User, User>(USER_URL)
+  const { data: userData, isLoading, error, isFetched } = useFetchById(id, { all: true })
+  const user = userData as User 
+  
+  // Show error notification if API request fails
+  useEffect(() => {
+    if (error) {
+      toast.error(`Error loading user data: ${error.message || 'Unknown error'}`)
+    }
+  }, [error])
+  
+  // Get initials for avatar fallback
+  const getInitials = (name?: string): string => {
+    if (!name) return "U"
+    const parts = name.split(' ')
+    if (parts.length > 1) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+    }
+    return name.substring(0, 2).toUpperCase()
+  }
+
+  // Get role badge variant
+  const getRoleBadgeVariant = (role?: UserRole) => {
+    switch (role) {
+      case "admin": return "destructive"
+      case "caregiver": return "default"
+      case "technician": return "secondary"
+      case "patient": return "outline"
+      default: return "outline"
+    }
+  }
+  
+  // Loading state
+  if (isLoading || !isFetched) {
+    return (
+      <DashboardLayout userRole="admin">
+        <div className="flex flex-col items-center justify-center h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground">Loading user profile...</p>
+        </div>
+      </DashboardLayout>
+    )
+  }
+  
+  // Error state
+  if (error || !user) {
+    console.error(user)
+    return (
+      <DashboardLayout userRole="admin">
+        <div className="flex flex-col items-center justify-center h-[60vh]">
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-bold">Failed to load user profile</h2>
+            <p className="text-muted-foreground">{error?.message || "User not found"}</p>
+            <Button onClick={() => window.history.back()}>Go Back</Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
   return (
     <DashboardLayout userRole="admin">
       <div className="space-y-6">
         {/* User Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src="/placeholder.svg" />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
+              <Avatar className="h-24 w-24">
+                <AvatarImage 
+                  src={user?.profile_image || "/placeholder.svg?height=96&width=96"} 
+                  alt={`${user?.first_name} ${user?.last_name}`.trim() || "User"} 
+                />
+                <AvatarFallback>{getInitials()}</AvatarFallback>
+              </Avatar>
             <div>
-              <h2 className="text-2xl font-bold">John Doe</h2>
+              <h2 className="text-2xl font-bold">{`${user.first_name} ${user.last_name}`}</h2>
               <div className="flex items-center gap-2">
-                <Badge>Caregiver</Badge>
-                <Badge variant="outline">Active</Badge>
+                <Badge variant={getRoleBadgeVariant(user.role as UserRole)}>{user.role}</Badge>
+                <Badge variant="outline">{user.is_active ? "Active" : "Inactive"}</Badge>
               </div>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline">Reset Password</Button>
-            <Button variant="outline">Suspend Account</Button>
+            <Button variant="outline">{user.is_active ? "Suspend Account" : "Activate Account"}</Button>
             <Button>Edit Profile</Button>
           </div>
         </div>
@@ -63,15 +137,15 @@ export default function UserProfilePage() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>john.doe@example.com</span>
+                    <span>{user.email}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span>+1 234 567 890</span>
+                    <span>{user.phone_number || "Not provided"}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>New York, USA</span>
+                    <span>{user.address || "Not specified"}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -83,16 +157,18 @@ export default function UserProfilePage() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>Joined March 2024</span>
+                    <span>Joined {formatDateTime(user.date_joined, "medium")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-muted-foreground" />
-                    <span>2FA Enabled</span>
+                    <span>{user.is_2fa_enabled ? "2FA Enabled" : "2FA Disabled"}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span>5 Assigned Patients</span>
-                  </div>
+                  {user.role === "caregiver" && (
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span>{user.assigned_patients_count || 0} Assigned Patients</span>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -203,6 +279,7 @@ export default function UserProfilePage() {
   )
 }
 
+// Keep the mock data for now, but this would typically come from API calls
 const recentActivity = [
   { action: "Logged in to the system", time: "2 hours ago" },
   { action: "Updated patient records", time: "4 hours ago" },

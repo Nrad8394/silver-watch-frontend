@@ -20,6 +20,7 @@ export interface User {
   date_joined: string; 
   groups: number[]; 
   user_permissions: string[]; // Added from JSON, assuming permissions are string-based
+  address: string;
 }
 
 

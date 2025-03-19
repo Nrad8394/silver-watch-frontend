@@ -20,7 +20,7 @@ import { Switch } from "@/components/ui/switch"
 interface AddUserModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: any) => void
+  onSubmit: (data: unknown) => void
 }
 
 export function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModalProps) {

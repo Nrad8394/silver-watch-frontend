@@ -34,6 +34,7 @@ export function ProfileSettings() {
       toast.info("Profile updated successfully")
     } catch (error) {
       toast.error("An error occurred while updating your profile")
+      console.error(error)
     }
   }
 

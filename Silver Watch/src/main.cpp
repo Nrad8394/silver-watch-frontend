@@ -175,8 +175,8 @@ void fetchUserId() {
     StaticJsonDocument<512> doc;
     DeserializationError error = deserializeJson(doc, response);
 
-    if (!error && doc.containsKey("id")) {
-      userId = doc["id"].as<String>();
+    if (!error && doc.containsKey("assigned_to")) {
+      userId = doc["assigned_to"].as<String>();
       Serial.println("User ID: " + userId);
     } else {
       Serial.println("JSON Parsing Failed: " + String(error.c_str()));
