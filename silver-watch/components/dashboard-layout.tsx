@@ -131,7 +131,7 @@ export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
             </Button>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto px-4 py-6 lg:px-6">{children}</main>
+        <main className="flex-1  px-4 py-6 lg:px-6">{children}</main>
       </div>
     </div>
   )
