@@ -6,7 +6,7 @@
  */
 
 // Base URL Configuration - Change this based on your environment
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:80';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export { BASE_URL };
 
